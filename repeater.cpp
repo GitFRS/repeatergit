@@ -18,14 +18,16 @@ string upperCaseWord(string str) {
 }
 
 int main() {
-    setlocale(LC_ALL, "Russian");
     string commandUsr;
-
-    ifstream start("source.txt");
-    while (getline(start, commandUsr)) { // Костыль, возможная ошибка: записывать всё в одну переменную
-        cout << commandUsr << '\n';      // commandUsr <!!!>
-    }
-    start.close();
+    
+    cout << "Welcome!" << '\n';
+    cout << "To create a directory, type MKDIR " << '\n';
+    cout << "To delete a directory, type DELDIR" << '\n';
+    cout << "To edit a directory, type EDITDIR" << '\n';
+    cout << "To show content of directory, type LISTDIR <directory>" << '\n';
+    cout << "To show everything, type LISTALL" << '\n';
+    cout << "To show hints, type HELP" << '\n';
+    cout << "To exit the program, type EXIT" << '\n';
 
     while (cout << ">> ", getline(cin, commandUsr)) {
 
@@ -33,8 +35,8 @@ int main() {
         
         // 1. Создание раздела
         if (commandUsr == "MKDIR") {
-            cout << "Для отмены введите EXIT" << '\n';
-            cout << "Введите название нового раздела: ";
+            cout << "To cancel, type EXIT" << '\n';
+            cout << "Enter the name of the new directory: ";
             getline(cin, commandUsr);
             commandUsr = upperCaseWord(commandUsr);
             if (commandUsr == "EXIT") { continue; }
@@ -42,7 +44,7 @@ int main() {
             newdir.open("directories.txt", ofstream::app);
             newdir << "### " + commandUsr + " ###" << '\n';
             newdir.close();
-            cout << "Раздел создан" << '\n';
+            cout << "Directory created" << '\n';
         }
 
         // 2. Удаление раздела

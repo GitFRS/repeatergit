@@ -1,0 +1,7 @@
+MKDIR -- create the directory
+DELDIR -- delete the directory
+EDITDIR <directory> -- edit the directory 
+LISTDIR <directory> -- show content of the directory
+LISTALL -- show everything
+HELP -- show hints (this text)
+EXIT -- exit the program or cancel sth
