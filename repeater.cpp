@@ -18,7 +18,8 @@ string upperCaseWord(string str) {
 }
 
 int main() {
-    setlocale(LC_ALL, "Russian"); 
+    setlocale(LC_ALL, "Russian");
+    system("chcp1251>nul"); 
     string commandUsr;
 
     ifstream start("source.txt");
