@@ -21,19 +21,25 @@ int main() {
     string commandUsr;
     
     cout << "Welcome!" << '\n';
-    cout << "To create a directory, type MKDIR " << '\n';
-    cout << "To delete a directory, type DELDIR" << '\n';
-    cout << "To edit a directory, type EDITDIR" << '\n';
-    cout << "To show content of directory, type LISTDIR <directory>" << '\n';
-    cout << "To show everything, type LISTALL" << '\n';
-    cout << "To show hints, type HELP" << '\n';
-    cout << "To exit the program, type EXIT" << '\n';
+    cout << "To enter training, type TRAIN" << '\n';              // X
+    cout << "To create a directory, type MKDIR " << '\n';         // \/
+    cout << "To delete a directory, type DELDIR" << '\n';         // \/
+    cout << "To edit a directory, type EDITDIR" << '\n';          // X
+    cout << "To show content of directory, type LISTDIR" << '\n'; // \/
+    cout << "To show everything, type LISTALL" << '\n';           // \/
+    cout << "To show hints, type HELP" << '\n';                   // \/
+    cout << "To exit the program, type EXIT" << '\n';             // \/
 
     while (cout << ">> ", getline(cin, commandUsr)) {
 
         commandUsr = upperCaseWord(commandUsr);
         
-        // 1. Создание раздела
+
+        // 1. Вход в режим тренировки
+        // if (commandUsr == "TRAIN") {}
+
+
+        // 2. Создание раздела
         if (commandUsr == "MKDIR") {
             cout << "To cancel, type EXIT" << '\n';
             cout << "Enter the name of the new directory: \n";
@@ -47,7 +53,8 @@ int main() {
             cout << "Directory created" << '\n';
         }
 
-        // 2. Удаление раздела
+
+        // 3. Удаление раздела
         if (commandUsr == "DELDIR") { 
             cout << "To cancel, type EXIT" << '\n';                  // Если файл пустой, то выводить сообщение:
             cout << "Enter the name of the directory to delete: \n"; // "Nothing to delete!"
@@ -56,50 +63,83 @@ int main() {
 
             if (commandUsr == "EXIT") { break; }
             
-            bool flagToFind = false;
-            string finder;
+            bool flagToFind1 = false;
+            string finderCopy;
             ifstream toCopyDir("directories.txt");
             ofstream fakeDir("directoriesTemp.txt");
-            while (getline(toCopyDir, finder)) {
-                if (finder == "### " + commandUsr + " ###") {
-                    flagToFind = true;
-                    finder = "";
+            while (getline(toCopyDir, finderCopy)) {
+                if (finderCopy == "### " + commandUsr + " ###") {
+                    flagToFind1 = true;
+                    finderCopy = "";
                 }
-                else if (flagToFind == true) {
-                    if (finder == "---###---") {
-                        flagToFind = false;
-                        finder = "";
+                else if (flagToFind1 == true) {
+                    if (finderCopy == "---###---") {
+                        flagToFind1 = false;
+                        finderCopy = "";
                         continue;
                     }
                     else {
-                        finder = "";
+                        finderCopy = "";
                         continue;
                     }
                 }
                 else {
-                    fakeDir << finder << '\n';
-                    finder = "";
+                    fakeDir << finderCopy << '\n';
+                    finderCopy = "";
                 }
             }
             toCopyDir.close();
             fakeDir.close();
             ofstream trueDir("directories.txt");
             ifstream toTrueDir("directoriesTemp.txt");
-            while (getline(toTrueDir, finder)) {
-                trueDir << finder << '\n';
+            while (getline(toTrueDir, finderCopy)) {
+                trueDir << finderCopy << '\n';
             }
+            cout << "Directory deleted" << '\n';
             trueDir.close();
             toTrueDir.close();
             remove("directoriesTemp.txt");
         }
 
-        // 3. Редактирование раздела
+
+        // 4. Редактирование раздела
         //if (commandUsr == "EDITDIR") { }
         
 
-        // 5. Вывод всего содержимого
+        // 5. Вывод содержимого раздела
+        if (commandUsr == "LISTDIR") {
+            cout << "To cancel, type EXIT" << '\n';
+            cout << "Enter the name of the directory to list: \n";
+            getline(cin, commandUsr);
+            commandUsr = upperCaseWord(commandUsr);
+
+            if (commandUsr == "EXIT") { break; }
+            
+            bool flagToFind2 = false;
+            string finderLister;
+            ifstream listdir("directories.txt");
+            while (getline(listdir, finderLister)) {
+                if (finderLister == "### " + commandUsr + " ###") {
+                    flagToFind2 = true;
+                    cout << finderLister << '\n';
+                }
+                else if (flagToFind2 == true) {
+                    if (finderLister == "---###---") {
+                        cout << finderLister << '\n';
+                        break;
+                    }
+                    else {
+                        cout << finderLister << '\n';
+                    }
+                }
+            }
+            listdir.close();
+        }
+    
+
+        // 6. Вывод всего содержимого
         if (commandUsr == "LISTALL") {
-            ifstream list; // <?>
+            ifstream list;
             list.open("directories.txt");
             while (getline(list, commandUsr)) { // <!!!> 
                 cout << commandUsr << '\n';
@@ -108,7 +148,8 @@ int main() {
             continue;
         }
 
-        // 6. Вывод подсказок
+
+        // 7. Вывод подсказок
         if (commandUsr == "HELP") {
             ifstream help; // <?>
             help.open("help.txt");
@@ -120,14 +161,13 @@ int main() {
  
         }
 
-        // 7. Выход из программы
+
+        // 8. Выход из программы
         if (commandUsr == "EXIT") {
             cout << "See you next time!" << '\n';
             system("pause>nul");
             return 0;
         }
-
-
     }
     
     return 0;
