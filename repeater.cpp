@@ -36,19 +36,62 @@ int main() {
         // 1. Создание раздела
         if (commandUsr == "MKDIR") {
             cout << "To cancel, type EXIT" << '\n';
-            cout << "Enter the name of the new directory: ";
+            cout << "Enter the name of the new directory: \n";
             getline(cin, commandUsr);
             commandUsr = upperCaseWord(commandUsr);
             if (commandUsr == "EXIT") { continue; }
             ofstream newdir; // <!>
             newdir.open("directories.txt", ofstream::app);
-            newdir << "### " + commandUsr + " ###" << '\n';
+            newdir << "### " + commandUsr + " ###" + '\n' + "---###---" << '\n';
             newdir.close();
             cout << "Directory created" << '\n';
         }
 
         // 2. Удаление раздела
-        //if (commandUsr == "DELDIR") { }
+        if (commandUsr == "DELDIR") { 
+            cout << "To cancel, type EXIT" << '\n';                  // Если файл пустой, то выводить сообщение:
+            cout << "Enter the name of the directory to delete: \n"; // "Nothing to delete!"
+            getline(cin, commandUsr);                                // (доработать)
+            commandUsr = upperCaseWord(commandUsr);
+
+            if (commandUsr == "EXIT") { break; }
+            
+            bool flagToFind = false;
+            string finder;
+            ifstream toCopyDir("directories.txt");
+            ofstream fakeDir("directoriesTemp.txt");
+            while (getline(toCopyDir, finder)) {
+                if (finder == "### " + commandUsr + " ###") {
+                    flagToFind = true;
+                    finder = "";
+                }
+                else if (flagToFind == true) {
+                    if (finder == "---###---") {
+                        flagToFind = false;
+                        finder = "";
+                        continue;
+                    }
+                    else {
+                        finder = "";
+                        continue;
+                    }
+                }
+                else {
+                    fakeDir << finder << '\n';
+                    finder = "";
+                }
+            }
+            toCopyDir.close();
+            fakeDir.close();
+            ofstream trueDir("directories.txt");
+            ifstream toTrueDir("directoriesTemp.txt");
+            while (getline(toTrueDir, finder)) {
+                trueDir << finder << '\n';
+            }
+            trueDir.close();
+            toTrueDir.close();
+            remove("directoriesTemp.txt");
+        }
 
         // 3. Редактирование раздела
         //if (commandUsr == "EDITDIR") { }
