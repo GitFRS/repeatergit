@@ -1,7 +1,7 @@
 * TRAIN   <-----]                 -- enter training mode
 	[* TRAINALL ]                 -- train everything mode
-	[* TRAINDIR	]				  -- train directory mode
-	[->REPEAT ->]				  -- repeat training	
+	[* TRAINDIR ]		          -- train directory mode
+	[->REPEAT ->]		          -- repeat training	
 * MKDIR                           -- create the directory
 * DELDIR                          -- delete the directory
 * EDITDIR                         -- edit the directory 

@@ -1,5 +1,6 @@
 #include <bits/stdc++.h>
 using namespace std;
+
 string upperCaseWord(string str) {
     string newString = "";
     for (auto c : str) {
@@ -18,6 +19,8 @@ string upperCaseWord(string str) {
 }
 
 int main() {
+    //time_t tm = time(NULL); // УДАЛИТЬ !!!
+    //cout << ctime(&tm) << '\n';
     string commandUsr;
     
     cout << "Welcome!" << '\n';
@@ -28,7 +31,7 @@ int main() {
     cout << "To show content of directory, type LISTDIR" << '\n'; // \/
     cout << "To show everything, type LISTALL" << '\n';           // \/
     cout << "To show hints, type HELP" << '\n';                   // \/
-    cout << "To exit the program, type EXIT" << '\n';             // \/
+    cout << "To exit the program, type EXIT\n\n";           // \/
 
     while (cout << ">> ", getline(cin, commandUsr)) {
 
@@ -41,28 +44,26 @@ int main() {
 
         // 2. Создание раздела
         if (commandUsr == "MKDIR") {
-            cout << "To cancel, type EXIT" << '\n';
-            cout << "Enter the name of the new directory: \n";
-            getline(cin, commandUsr);
+            cout << "\nTo cancel, type EXIT" << '\n';
+            cout << "Enter the name of the new directory: \n"; // Ввести ограничение
+            cout << ">> ";                                     // Если два раздела
+            getline(cin, commandUsr);                          // Называются одинаково
             commandUsr = upperCaseWord(commandUsr);
-            if (commandUsr == "EXIT") { continue; }
+            if (commandUsr == "EXIT") { cout << '\n'; continue; }
             ofstream newdir; // <!>
             newdir.open("directories.txt", ofstream::app);
             newdir << "### " + commandUsr + " ###" + '\n' + "---###---" << '\n';
             newdir.close();
-            cout << "Directory created" << '\n';
+            cout << "Directory created\n\n";
         }
-
-
         // 3. Удаление раздела
         if (commandUsr == "DELDIR") { 
-            cout << "To cancel, type EXIT" << '\n';                  // Если файл пустой, то выводить сообщение:
-            cout << "Enter the name of the directory to delete: \n"; // "Nothing to delete!"
-            getline(cin, commandUsr);                                // (доработать)
+            cout << "\nTo cancel, type EXIT" << '\n';                  // Если файл пустой, то выводить сообщение:
+            cout << "Enter the name of the directory to delete: \n"; // "Nothing to delete!" 
+            cout << ">> ";
+            getline(cin, commandUsr);                                
             commandUsr = upperCaseWord(commandUsr);
-
-            if (commandUsr == "EXIT") { break; }
-            
+            if (commandUsr == "EXIT") { cout << '\n'; continue; }            
             bool flagToFind1 = false;
             string finderCopy;
             ifstream toCopyDir("directories.txt");
@@ -95,32 +96,35 @@ int main() {
             while (getline(toTrueDir, finderCopy)) {
                 trueDir << finderCopy << '\n';
             }
-            cout << "Directory deleted" << '\n';
+            cout << "Directory deleted\n\n";
             trueDir.close();
             toTrueDir.close();
             remove("directoriesTemp.txt");
         }
-
-
         // 4. Редактирование раздела
-        //if (commandUsr == "EDITDIR") { }
-        
-
+        /*if (commandUsr == "EDITDIR") {
+            cout << "To cancel, type EXIT" << '\n';
+            cout << "Enter the name of the directory to edit: \n";
+            getline(cin, commandUsr);
+            cout << '\n';
+        */ 
         // 5. Вывод содержимого раздела
         if (commandUsr == "LISTDIR") {
-            cout << "To cancel, type EXIT" << '\n';
+            cout << "\nTo cancel, type EXIT" << '\n';
             cout << "Enter the name of the directory to list: \n";
+            cout << ">> ";
             getline(cin, commandUsr);
+            cout << '\n';
             commandUsr = upperCaseWord(commandUsr);
-
-            if (commandUsr == "EXIT") { break; }
-            
+            if (commandUsr == "EXIT") { cout << '\n'; continue; }
+            cout << "==========\n\n";
             bool flagToFind2 = false;
             string finderLister;
             ifstream listdir("directories.txt");
             while (getline(listdir, finderLister)) {
                 if (finderLister == "### " + commandUsr + " ###") {
                     flagToFind2 = true;
+                    cout << "==========\n\n";
                     cout << finderLister << '\n';
                 }
                 else if (flagToFind2 == true) {
@@ -133,35 +137,36 @@ int main() {
                     }
                 }
             }
+            cout << "\n==========\n\n";
             listdir.close();
         }
     
 
+
+
         // 6. Вывод всего содержимого
         if (commandUsr == "LISTALL") {
+            cout << "\n==========\n\n";
+            string listall;
             ifstream list;
             list.open("directories.txt");
-            while (getline(list, commandUsr)) { // <!!!> 
-                cout << commandUsr << '\n';
-            }
+            while (getline(list, listall)) { cout << listall << '\n'; }
+            cout << "\n==========\n\n";
             list.close();
             continue;
         }
-
-
         // 7. Вывод подсказок
         if (commandUsr == "HELP") {
-            ifstream help; // <?>
+            cout << "==========\n\n";
+            ifstream help;
             help.open("help.txt");
             while (getline(help, commandUsr)) {
                 cout << commandUsr << '\n';
             }
+            cout << "\n==========\n";
             help.close();
             continue;
- 
         }
-
-
         // 8. Выход из программы
         if (commandUsr == "EXIT") {
             cout << "See you next time!" << '\n';
@@ -169,6 +174,5 @@ int main() {
             return 0;
         }
     }
-    
     return 0;
 }
