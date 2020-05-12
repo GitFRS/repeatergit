@@ -19,9 +19,19 @@ string upperCaseWord(string str) {
 }
 
 int main() {
-    //time_t tm = time(NULL); // УДАЛИТЬ !!!
-    //cout << ctime(&tm) << '\n';
+    
     string commandUsr;
+
+    vector <pair <string, string>> DICT;
+
+    char buffer[40];
+    time_t dmy = time(NULL);
+    tm* timeinfo = localtime(&dmy);
+    const char* format = "%d|%m|%Y";
+    strftime(buffer, 40, format, timeinfo);
+
+    //cout << buffer << '\n';
+
     
     cout << "Welcome!" << '\n';
     cout << "To enter training, type TRAIN" << '\n';              // X
@@ -38,8 +48,10 @@ int main() {
         commandUsr = upperCaseWord(commandUsr);
         
 
+
         // 1. Вход в режим тренировки
         // if (commandUsr == "TRAIN") {}
+
 
 
         // 2. Создание раздела
@@ -52,10 +64,14 @@ int main() {
             if (commandUsr == "EXIT") { cout << '\n'; continue; }
             ofstream newdir; // <!>
             newdir.open("directories.txt", ofstream::app);
-            newdir << "### " + commandUsr + " ###" + '\n' + "---###---" << '\n';
+            newdir << "### " + commandUsr + " ###" + '\n'/* + "---###---" << '\n'*/;
+            newdir << "        Word        #        Key        #" 
+                   << "    Added    #    Next repeat\n\n";
+            newdir << "---###---" << '\n';
             newdir.close();
             cout << "Directory created\n\n";
         }
+
         // 3. Удаление раздела
         if (commandUsr == "DELDIR") { 
             cout << "\nTo cancel, type EXIT" << '\n';                  // Если файл пустой, то выводить сообщение:
@@ -66,9 +82,9 @@ int main() {
             if (commandUsr == "EXIT") { cout << '\n'; continue; }            
             bool flagToFind1 = false;
             string finderCopy;
-            ifstream toCopyDir("directories.txt");
-            ofstream fakeDir("directoriesTemp.txt");
-            while (getline(toCopyDir, finderCopy)) {
+            ifstream toCopyDir1("directories.txt");
+            ofstream fakeDir1("directoriesTemp.txt");
+            while (getline(toCopyDir1, finderCopy)) {
                 if (finderCopy == "### " + commandUsr + " ###") {
                     flagToFind1 = true;
                     finderCopy = "";
@@ -85,29 +101,83 @@ int main() {
                     }
                 }
                 else {
-                    fakeDir << finderCopy << '\n';
+                    fakeDir1 << finderCopy << '\n';
                     finderCopy = "";
                 }
             }
-            toCopyDir.close();
-            fakeDir.close();
-            ofstream trueDir("directories.txt");
-            ifstream toTrueDir("directoriesTemp.txt");
-            while (getline(toTrueDir, finderCopy)) {
-                trueDir << finderCopy << '\n';
+            toCopyDir1.close();
+            fakeDir1.close();
+            ofstream trueDir1("directories.txt");
+            ifstream toTrueDir1("directoriesTemp.txt");
+            while (getline(toTrueDir1, finderCopy)) {
+                trueDir1 << finderCopy << '\n';
             }
             cout << "Directory deleted\n\n";
-            trueDir.close();
-            toTrueDir.close();
+            trueDir1.close();
+            toTrueDir1.close();
             remove("directoriesTemp.txt");
         }
+
+
+
         // 4. Редактирование раздела
-        /*if (commandUsr == "EDITDIR") {
+        if (commandUsr == "EDITDIR") {                // ПРЕДУПРЕЖДЕНИЕ!!!
             cout << "To cancel, type EXIT" << '\n';
             cout << "Enter the name of the directory to edit: \n";
             getline(cin, commandUsr);
             cout << '\n';
-        */ 
+            commandUsr = upperCaseWord(commandUsr);
+            if (commandUsr == "EXIT") { cout << '\n'; continue; }
+            cout << "To stop edit, type EXIT twice" << '\n';
+            cout << "Enter words and keys after it: \n";
+            bool flagToFind2 = false, exitFlag = false;
+            string finderEditor;
+            ifstream toCopyDir2("directories.txt");
+            ofstream fakeDir2("directoriesTemp.txt");
+            while (getline(toCopyDir2, finderEditor)) {
+                if (finderEditor == "### " + commandUsr + " ###") {
+                    fakeDir2 << finderEditor << '\n';
+                    fakeDir2 << "        Word        #        Key        #" 
+                             << "    Added    #    Next repeat\n\n";
+                    flagToFind2 = true;
+                    finderEditor = "";
+                }
+                else if (flagToFind2 == true) {
+                    if (finderEditor == "---###---") {
+                        fakeDir2 << finderEditor << '\n';
+                        flagToFind2 = false;
+                        finderEditor = "";
+                    }
+                    else {
+                        string word, key;
+                        while (cin >> word) {
+                            if (word == "EXIT") { flagToFind2 = false; break; }
+                            cin >> key;
+                            fakeDir2 << word << "                  " << key << "               " << buffer << '\n'; // Дописать запись повтора
+                            DICT.push_back({word, key});
+                        }
+                    }
+                }
+                else {
+                    fakeDir2 << finderEditor << '\n';
+                    finderEditor = "";
+                }
+            }
+            fakeDir2.close();
+            toCopyDir2.close();
+            ofstream trueDir2("directories.txt");
+            ifstream toTrueDir2("directoriesTemp.txt");
+            while (getline(toTrueDir2, finderEditor)) {
+                trueDir2 << finderEditor << '\n';
+            }
+            trueDir2.close();
+            toTrueDir2.close();
+            remove("directoriesTemp.txt");
+            cout << "Editing complete\n";
+        }
+
+
+
         // 5. Вывод содержимого раздела
         if (commandUsr == "LISTDIR") {
             cout << "\nTo cancel, type EXIT" << '\n';
@@ -117,17 +187,16 @@ int main() {
             cout << '\n';
             commandUsr = upperCaseWord(commandUsr);
             if (commandUsr == "EXIT") { cout << '\n'; continue; }
-            cout << "==========\n\n";
-            bool flagToFind2 = false;
+            cout << "========================================================\n\n";
+            bool flagToFind3 = false;
             string finderLister;
             ifstream listdir("directories.txt");
             while (getline(listdir, finderLister)) {
                 if (finderLister == "### " + commandUsr + " ###") {
-                    flagToFind2 = true;
-                    cout << "==========\n\n";
+                    flagToFind3 = true;
                     cout << finderLister << '\n';
                 }
-                else if (flagToFind2 == true) {
+                else if (flagToFind3 == true) {
                     if (finderLister == "---###---") {
                         cout << finderLister << '\n';
                         break;
@@ -137,24 +206,22 @@ int main() {
                     }
                 }
             }
-            cout << "\n==========\n\n";
+            cout << "\n========================================================\n\n";
             listdir.close();
         }
-    
-
-
 
         // 6. Вывод всего содержимого
         if (commandUsr == "LISTALL") {
-            cout << "\n==========\n\n";
+            cout << "\n========================================================\n\n";
             string listall;
             ifstream list;
             list.open("directories.txt");
             while (getline(list, listall)) { cout << listall << '\n'; }
-            cout << "\n==========\n\n";
+            cout << "\n========================================================\n\n";
             list.close();
             continue;
         }
+
         // 7. Вывод подсказок
         if (commandUsr == "HELP") {
             cout << "==========\n\n";
@@ -167,6 +234,7 @@ int main() {
             help.close();
             continue;
         }
+
         // 8. Выход из программы
         if (commandUsr == "EXIT") {
             cout << "See you next time!" << '\n';
