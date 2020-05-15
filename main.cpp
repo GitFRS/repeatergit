@@ -18,19 +18,30 @@ string upperCaseWord(string str) {
     return newString;
 }
 
+unsigned long toRepeat1(unsigned long intDMY) {
+    unsigned long repDay = intDMY / 60 % 60 % 10; // минуты mM
+    repDay = intDMY / 60 % 60 / 10;
+    return repDay;
+}
+
 int main() {
     
     string commandUsr;
 
     vector <pair <string, string>> DICT;
 
-    char buffer[40];
-    time_t dmy = time(NULL);
+    char addedTime[40];
+    char repTime[40];
+    time_t dmy = time(NULL); 
+    time_t dmy2 = time(NULL) + 604800;
     tm* timeinfo = localtime(&dmy);
     const char* format = "%d|%m|%Y";
-    strftime(buffer, 40, format, timeinfo);
+    strftime(addedTime, 40, format, timeinfo);
+    cout << addedTime << '\n';
+    tm* timeinfo1 = localtime(&dmy2);
+    strftime(repTime, 40, format, timeinfo1);
+    cout << repTime << '\n';
 
-    //cout << buffer << '\n';
 
     
     cout << "Welcome!" << '\n';
@@ -122,14 +133,12 @@ int main() {
 
         // 4. Редактирование раздела
         if (commandUsr == "EDITDIR") {                // ПРЕДУПРЕЖДЕНИЕ!!!
-            cout << "To cancel, type EXIT" << '\n';
-            cout << "Enter the name of the directory to edit: \n";
+            cout << "To cancel, type EXIT\n" << "Enter the name of the directory to edit: \n";
             getline(cin, commandUsr);
             cout << '\n';
             commandUsr = upperCaseWord(commandUsr);
             if (commandUsr == "EXIT") { cout << '\n'; continue; }
-            cout << "To stop edit, type EXIT twice" << '\n';
-            cout << "Enter words and keys after it: \n";
+            cout << "To stop edit, type EXIT twice\n" << "Enter words and keys after it: \n";
             bool flagToFind2 = false, exitFlag = false;
             string finderEditor;
             ifstream toCopyDir2("directories.txt");
@@ -137,24 +146,40 @@ int main() {
             while (getline(toCopyDir2, finderEditor)) {
                 if (finderEditor == "### " + commandUsr + " ###") {
                     fakeDir2 << finderEditor << '\n';
-                    fakeDir2 << "        Word        #        Key        #" 
-                             << "    Added    #    Next repeat\n\n";
+                    fakeDir2 << "        Word        #        Key         #" 
+                             << "    Added    #    Next repeat\n";
                     flagToFind2 = true;
                     finderEditor = "";
                 }
                 else if (flagToFind2 == true) {
                     if (finderEditor == "---###---") {
-                        fakeDir2 << finderEditor << '\n';
+                        fakeDir2 << finderEditor;
                         flagToFind2 = false;
                         finderEditor = "";
                     }
                     else {
-                        string word, key;
-                        while (cin >> word) {
-                            if (word == "EXIT") { flagToFind2 = false; break; }
-                            cin >> key;
-                            fakeDir2 << word << "                  " << key << "               " << buffer << '\n'; // Дописать запись повтора
-                            DICT.push_back({word, key});
+                        string infWK;
+                        while (cin >> infWK) {
+                            char fullInf[] = "                                                                           ";
+                            /*for (int j = 0; j < 75; j++) { // Создание специальной строки
+                                fullInf[j] = ' ';          // Для правильной записи в файл
+                            }*/                             
+                                                         
+                            if (infWK[0] == 'E' && infWK[1] == 'X' && infWK[2] == 'I' && infWK[3] == 'T') { flagToFind2 = false; break; }
+                            for (int i = 0; infWK[i] != '\0'; i++) { 
+                                fullInf[i + 1] = infWK[i];
+                            }
+                            cin >> infWK;
+                            for (int i = 0; infWK[i] != '\0'; i++) {
+                                fullInf[i+22] = infWK[i];
+                            }
+                            for (int i = 0; addedTime[i] != '\0'; i++) {
+                                fullInf[i+43] = addedTime[i];
+                            }
+                            for (int i = 0; repTime[i] != '\0'; i++) {
+                                fullInf[i+60] = repTime[i];
+                            }
+                            fakeDir2 << fullInf << '\n';
                         }
                     }
                 }
@@ -163,6 +188,7 @@ int main() {
                     finderEditor = "";
                 }
             }
+            cout << "Editing complete\n";
             fakeDir2.close();
             toCopyDir2.close();
             ofstream trueDir2("directories.txt");
@@ -173,7 +199,6 @@ int main() {
             trueDir2.close();
             toTrueDir2.close();
             remove("directoriesTemp.txt");
-            cout << "Editing complete\n";
         }
 
 
