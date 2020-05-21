@@ -18,10 +18,27 @@ string upperCaseWord(string str) {
     return newString;
 }
 
-unsigned long toRepeat1(unsigned long intDMY) {
-    unsigned long repDay = intDMY / 60 % 60 % 10; // минуты mM
-    repDay = intDMY / 60 % 60 / 10;
-    return repDay;
+bool isExist(string commandUsr) {
+    ifstream dir("directories.txt");
+    string str;
+    while (getline(dir, str)) {
+        if (str == "### " + commandUsr + " ###") {
+            dir.close();
+            return true;
+        }
+    }
+    dir.close();
+    return false;
+}
+
+string clearWord(string a) {
+    string b = "";
+    for (auto c : a) {
+        if (c != ' ') {
+            b += c;
+        }
+    }
+    return b;
 }
 
 int main() {
@@ -37,12 +54,8 @@ int main() {
     tm* timeinfo = localtime(&dmy);
     const char* format = "%d|%m|%Y";
     strftime(addedTime, 40, format, timeinfo);
-    cout << addedTime << '\n';
     tm* timeinfo1 = localtime(&dmy2);
     strftime(repTime, 40, format, timeinfo1);
-    cout << repTime << '\n';
-
-
     
     cout << "Welcome!" << '\n';
     cout << "To enter training, type TRAIN" << '\n';              // X
@@ -54,26 +67,65 @@ int main() {
     cout << "To show hints, type HELP" << '\n';                   // \/
     cout << "To exit the program, type EXIT\n\n";           // \/
 
-    while (cout << ">> ", getline(cin, commandUsr)) {
+    while (getline(cin, commandUsr)) {
 
         commandUsr = upperCaseWord(commandUsr);
         
-
-
         // 1. Вход в режим тренировки
-        // if (commandUsr == "TRAIN") {}
-
-
+         if (commandUsr == "TRAIN") {
+             cout << "\nTo cancel or exit, type EXIT\n";
+             cout << "If you want train everything, type TRAINALL\n";
+             cout << "If you want train the directory, type TRAINDIR\n";
+             getline(cin, commandUsr);
+             commandUsr = upperCaseWord(commandUsr);
+             if (commandUsr == "EXIT") { cout << '\n'; continue; }
+             string words, wordsFirst, wordsSecond;
+             if (commandUsr == "TRAINALL") {
+                 cout << "Enter the key to the word: \n";
+                 ifstream toTrain1("directories.txt");
+                 while (!toTrain1.eof()) {
+                     getline(toTrain1, words);
+                     if (words[0] == '#' && words[1] == '#' && words[2] == '#' ||
+                         words[0] == '-' && words[1] == '-' && words[2] == '-' ||
+                         words[8] == 'W' && words[9] == 'o' && words[10] == 'r' && words[11] == 'd') {
+                         continue;
+                     }
+                     else { 
+                         if (words != "") {
+                             wordsFirst = clearWord(words.substr(0, 20));
+                             wordsSecond = clearWord(words.substr(21, 20)); 
+                             DICT.push_back({ wordsFirst, wordsSecond }); 
+                         }
+                    }
+                 }
+                 toTrain1.close();
+                 int countOfRight = 0;
+                 random_shuffle(DICT.begin(), DICT.end());
+                 while (DICT.size() > 0) {
+                     string usrKey;
+                     cout << DICT[0].first << "\nKey is: ";
+                     cin >> usrKey;
+                     if (usrKey == "EXIT") { break; }
+                     if (usrKey == DICT[0].second) {
+                         countOfRight++;
+                     }
+                     DICT.erase(DICT.begin());
+                 }
+                 cout << "Training is finished!\nYour score is: " << countOfRight << "\n\n";
+             }
+         }
 
         // 2. Создание раздела
         if (commandUsr == "MKDIR") {
-            cout << "\nTo cancel, type EXIT" << '\n';
-            cout << "Enter the name of the new directory: \n"; // Ввести ограничение
-            cout << ">> ";                                     // Если два раздела
-            getline(cin, commandUsr);                          // Называются одинаково
+            cout << "\nTo cancel, type EXIT\n" << "Enter the name of the new directory: \n"; 
+            getline(cin, commandUsr);
             commandUsr = upperCaseWord(commandUsr);
+            if (isExist(commandUsr) == true) { 
+                cout << "This directory is already exist!\n\n";
+                continue;
+            }
             if (commandUsr == "EXIT") { cout << '\n'; continue; }
-            ofstream newdir; // <!>
+            ofstream newdir;
             newdir.open("directories.txt", ofstream::app);
             newdir << "### " + commandUsr + " ###" + '\n'/* + "---###---" << '\n'*/;
             newdir << "        Word        #        Key        #" 
@@ -85,16 +137,20 @@ int main() {
 
         // 3. Удаление раздела
         if (commandUsr == "DELDIR") { 
+            bool flagToFind1 = false;
+            string finderCopy;
+            ifstream toCopyDir1("directories.txt");// При оптимизации нужно попробовать заменить структурами
+            ofstream fakeDir1("directoriesTemp.txt");
+/*Можно  */ getline(toCopyDir1, finderCopy);
+/*Сделать*/ if (finderCopy == "") { cout << "Nothing to delete!\n\n"; continue; }
+/*Функцию*/ toCopyDir1.close();
+            toCopyDir1.open("directories.txt");
             cout << "\nTo cancel, type EXIT" << '\n';                  // Если файл пустой, то выводить сообщение:
             cout << "Enter the name of the directory to delete: \n"; // "Nothing to delete!" 
             cout << ">> ";
             getline(cin, commandUsr);                                
             commandUsr = upperCaseWord(commandUsr);
             if (commandUsr == "EXIT") { cout << '\n'; continue; }            
-            bool flagToFind1 = false;
-            string finderCopy;
-            ifstream toCopyDir1("directories.txt");
-            ofstream fakeDir1("directoriesTemp.txt");
             while (getline(toCopyDir1, finderCopy)) {
                 if (finderCopy == "### " + commandUsr + " ###") {
                     flagToFind1 = true;
@@ -129,19 +185,18 @@ int main() {
             remove("directoriesTemp.txt");
         }
 
-
-
         // 4. Редактирование раздела
-        if (commandUsr == "EDITDIR") {                // ПРЕДУПРЕЖДЕНИЕ!!!
+        if (commandUsr == "EDITDIR") {    
             cout << "To cancel, type EXIT\n" << "Enter the name of the directory to edit: \n";
             getline(cin, commandUsr);
             cout << '\n';
             commandUsr = upperCaseWord(commandUsr);
+            if (isExist(commandUsr) == false) { cout << "This directory doesn't exist\n\n"; continue; }
             if (commandUsr == "EXIT") { cout << '\n'; continue; }
             cout << "To stop edit, type EXIT twice\n" << "Enter words and keys after it: \n";
             bool flagToFind2 = false, exitFlag = false;
             string finderEditor;
-            ifstream toCopyDir2("directories.txt");
+            ifstream toCopyDir2("directories.txt");           // При оптимизации нужно попробовать заменить структурами
             ofstream fakeDir2("directoriesTemp.txt");
             while (getline(toCopyDir2, finderEditor)) {
                 if (finderEditor == "### " + commandUsr + " ###") {
@@ -154,31 +209,18 @@ int main() {
                 else if (flagToFind2 == true) {
                     if (finderEditor == "---###---") {
                         fakeDir2 << finderEditor;
-                        flagToFind2 = false;
                         finderEditor = "";
                     }
                     else {
                         string infWK;
                         while (cin >> infWK) {
                             char fullInf[] = "                                                                           ";
-                            /*for (int j = 0; j < 75; j++) { // Создание специальной строки
-                                fullInf[j] = ' ';          // Для правильной записи в файл
-                            }*/                             
-                                                         
                             if (infWK[0] == 'E' && infWK[1] == 'X' && infWK[2] == 'I' && infWK[3] == 'T') { flagToFind2 = false; break; }
-                            for (int i = 0; infWK[i] != '\0'; i++) { 
-                                fullInf[i + 1] = infWK[i];
-                            }
+                            for (int i = 0; infWK[i] != '\0'; i++) { fullInf[i+1] = infWK[i]; } 
                             cin >> infWK;
-                            for (int i = 0; infWK[i] != '\0'; i++) {
-                                fullInf[i+22] = infWK[i];
-                            }
-                            for (int i = 0; addedTime[i] != '\0'; i++) {
-                                fullInf[i+43] = addedTime[i];
-                            }
-                            for (int i = 0; repTime[i] != '\0'; i++) {
-                                fullInf[i+60] = repTime[i];
-                            }
+                            for (int i = 0; infWK[i] != '\0'; i++) { fullInf[i+22] = infWK[i]; }
+                            for (int i = 0; addedTime[i] != '\0'; i++) { fullInf[i+43] = addedTime[i]; }
+                            for (int i = 0; repTime[i] != '\0'; i++) { fullInf[i+60] = repTime[i]; }
                             fakeDir2 << fullInf << '\n';
                         }
                     }
@@ -188,7 +230,6 @@ int main() {
                     finderEditor = "";
                 }
             }
-            cout << "Editing complete\n";
             fakeDir2.close();
             toCopyDir2.close();
             ofstream trueDir2("directories.txt");
@@ -196,12 +237,11 @@ int main() {
             while (getline(toTrueDir2, finderEditor)) {
                 trueDir2 << finderEditor << '\n';
             }
+            cout << "Editing complete\n\n";
             trueDir2.close();
             toTrueDir2.close();
             remove("directoriesTemp.txt");
         }
-
-
 
         // 5. Вывод содержимого раздела
         if (commandUsr == "LISTDIR") {
@@ -226,9 +266,7 @@ int main() {
                         cout << finderLister << '\n';
                         break;
                     }
-                    else {
-                        cout << finderLister << '\n';
-                    }
+                    else { cout << finderLister << '\n'; }
                 }
             }
             cout << "\n========================================================\n\n";
@@ -252,9 +290,7 @@ int main() {
             cout << "==========\n\n";
             ifstream help;
             help.open("help.txt");
-            while (getline(help, commandUsr)) {
-                cout << commandUsr << '\n';
-            }
+            while (getline(help, commandUsr)) { cout << commandUsr << '\n'; }
             cout << "\n==========\n";
             help.close();
             continue;

@@ -1,7 +1,6 @@
-* TRAIN     <-------]             -- enter training mode
-	[* TRAINALL ]                 -- train everything mode
-	[* TRAINDIR ]                 -- train directory mode
-	[->REPEAT ->]                 -- repeat training	
+* TRAIN                           -- enter training mode
+	 * TRAINALL                   -- train everything mode
+	 * TRAINDIR                   -- train directory mode
 * MKDIR                           -- create the directory
 * DELDIR                          -- delete the directory
 * EDITDIR                         -- edit the directory 
@@ -9,4 +8,3 @@
 * LISTALL                         -- show everything
 * HELP                            -- show hints (this text)
 * EXIT                            -- exit the program or cancel sth
-
