@@ -1,6 +1,11 @@
 #include <bits/stdc++.h>
 using namespace std;
 
+struct dirs {
+	ifstream copy;
+	ofstream paste;
+};
+
 string upperCaseWord(string str) {
     string newString = "";
     for (auto c : str) {
@@ -41,6 +46,21 @@ string clearWord(string a) {
     return b;
 }
 
+void returnToDefaultDir() {
+	string finderCopy;
+	dirs copyPaste;
+	copyPaste.copy.open("directoriesTemp.txt");
+	copyPaste.paste.open("directories.txt");
+	while (getline(copyPaste.copy, finderCopy)) {
+		copyPaste.paste << finderCopy << '\n';
+	}
+	cout << "Operation completed!\n\n";
+	copyPaste.copy.close();
+	copyPaste.paste.close();
+	remove("directoriesTemp.txt");
+}
+
+
 int main() {
     
     string commandUsr;
@@ -52,7 +72,7 @@ int main() {
     time_t dmy = time(NULL); 
     time_t dmy2 = time(NULL) + 604800;
     tm* timeinfo = localtime(&dmy);
-    const char* format = "%d|%m|%Y";
+    const char* format = "%d.%m.%Y";
     strftime(addedTime, 40, format, timeinfo);
     tm* timeinfo1 = localtime(&dmy2);
     strftime(repTime, 40, format, timeinfo1);
@@ -113,21 +133,30 @@ int main() {
                  }
                  cout << "Training is finished!\nYour score is: " << countOfRight << "\n\n";
              }
-         }
+			 else if (commandUsr == "TRAINDIR") {
+				cout << "Enter the name of the directory to train: \n"; 
+				getline(cin, commandUsr);                                
+				commandUsr = upperCaseWord(commandUsr);
+				if (isExist(commandUsr) == false) { cout << "This directory doesn't exist!\n\n"; continue; }
+				// %команда в команде%
+				else {
+
+				}
+			 } 
+		 }
 
         // 2. Создание раздела
         if (commandUsr == "MKDIR") {
             cout << "\nTo cancel, type EXIT\n" << "Enter the name of the new directory: \n"; 
             getline(cin, commandUsr);
             commandUsr = upperCaseWord(commandUsr);
-            if (isExist(commandUsr) == true) { 
-                cout << "This directory is already exist!\n\n";
-                continue;
-            }
+
+            if (isExist(commandUsr) == true) { cout << "This directory is already exist!\n\n"; continue; }
             if (commandUsr == "EXIT") { cout << '\n'; continue; }
-            ofstream newdir;
+            
+			ofstream newdir;
             newdir.open("directories.txt", ofstream::app);
-            newdir << "### " + commandUsr + " ###" + '\n'/* + "---###---" << '\n'*/;
+            newdir << "### " + commandUsr + " ###" + '\n';
             newdir << "        Word        #        Key        #" 
                    << "    Added    #    Next repeat\n\n";
             newdir << "---###---" << '\n';
@@ -139,19 +168,25 @@ int main() {
         if (commandUsr == "DELDIR") { 
             bool flagToFind1 = false;
             string finderCopy;
-            ifstream toCopyDir1("directories.txt");// При оптимизации нужно попробовать заменить структурами
-            ofstream fakeDir1("directoriesTemp.txt");
-/*Можно  */ getline(toCopyDir1, finderCopy);
-/*Сделать*/ if (finderCopy == "") { cout << "Nothing to delete!\n\n"; continue; }
-/*Функцию*/ toCopyDir1.close();
-            toCopyDir1.open("directories.txt");
-            cout << "\nTo cancel, type EXIT" << '\n';                  // Если файл пустой, то выводить сообщение:
-            cout << "Enter the name of the directory to delete: \n"; // "Nothing to delete!" 
-            cout << ">> ";
+			dirs copyPaste1;
+
+
+			copyPaste1.copy.open("directories.txt");
+            copyPaste1.paste.open("directoriesTemp.txt");
+			getline(copyPaste1.copy, finderCopy);
+			if (finderCopy == "") { cout << "Nothing to delete!\n\n"; continue; }
+			copyPaste1.copy.close();
+
+            copyPaste1.copy.open("directories.txt");
+            cout << "\nTo cancel, type EXIT" << '\n'; 
+            cout << "Enter the name of the directory to delete: \n"; 
             getline(cin, commandUsr);                                
             commandUsr = upperCaseWord(commandUsr);
-            if (commandUsr == "EXIT") { cout << '\n'; continue; }            
-            while (getline(toCopyDir1, finderCopy)) {
+            if (commandUsr == "EXIT") { cout << '\n'; continue; }
+			else if (commandUsr == "TRAIN" || commandUsr == "MKDIR" || commandUsr == "DELDIR" ||
+					 commandUsr == "EDITDIR" || commandUsr == "LISTDIR" || commandUsr == "LISTALL" ||
+					 commandUsr == "HELP") { cout << "Incorrect input\n\n"; continue; }			
+            while (getline(copyPaste1.copy, finderCopy)) {
                 if (finderCopy == "### " + commandUsr + " ###") {
                     flagToFind1 = true;
                     finderCopy = "";
@@ -168,21 +203,13 @@ int main() {
                     }
                 }
                 else {
-                    fakeDir1 << finderCopy << '\n';
+                    copyPaste1.paste << finderCopy << '\n';
                     finderCopy = "";
                 }
             }
-            toCopyDir1.close();
-            fakeDir1.close();
-            ofstream trueDir1("directories.txt");
-            ifstream toTrueDir1("directoriesTemp.txt");
-            while (getline(toTrueDir1, finderCopy)) {
-                trueDir1 << finderCopy << '\n';
-            }
-            cout << "Directory deleted\n\n";
-            trueDir1.close();
-            toTrueDir1.close();
-            remove("directoriesTemp.txt");
+            copyPaste1.copy.close();
+            copyPaste1.paste.close();
+			returnToDefaultDir();
         }
 
         // 4. Редактирование раздела
@@ -191,24 +218,27 @@ int main() {
             getline(cin, commandUsr);
             cout << '\n';
             commandUsr = upperCaseWord(commandUsr);
-            if (isExist(commandUsr) == false) { cout << "This directory doesn't exist\n\n"; continue; }
+
+            if (isExist(commandUsr) == false) { cout << "Nothing to edit!\n\n"; continue; }
             if (commandUsr == "EXIT") { cout << '\n'; continue; }
-            cout << "To stop edit, type EXIT twice\n" << "Enter words and keys after it: \n";
+            
+			cout << "To stop edit, type EXIT twice\n" << "Enter words and keys after it: \n";
             bool flagToFind2 = false, exitFlag = false;
             string finderEditor;
-            ifstream toCopyDir2("directories.txt");           // При оптимизации нужно попробовать заменить структурами
-            ofstream fakeDir2("directoriesTemp.txt");
-            while (getline(toCopyDir2, finderEditor)) {
+			dirs copyPaste2;
+			copyPaste2.copy.open("directories.txt");
+			copyPaste2.paste.open("directoriesTemp.txt");
+            while (getline(copyPaste2.copy, finderEditor)) {
                 if (finderEditor == "### " + commandUsr + " ###") {
-                    fakeDir2 << finderEditor << '\n';
-                    fakeDir2 << "        Word        #        Key         #" 
+                    copyPaste2.paste << finderEditor << '\n';
+                    copyPaste2.paste << "        Word        #        Key         #" 
                              << "    Added    #    Next repeat\n";
                     flagToFind2 = true;
                     finderEditor = "";
                 }
                 else if (flagToFind2 == true) {
                     if (finderEditor == "---###---") {
-                        fakeDir2 << finderEditor;
+                        copyPaste2.paste << finderEditor;
                         finderEditor = "";
                     }
                     else {
@@ -221,38 +251,31 @@ int main() {
                             for (int i = 0; infWK[i] != '\0'; i++) { fullInf[i+22] = infWK[i]; }
                             for (int i = 0; addedTime[i] != '\0'; i++) { fullInf[i+43] = addedTime[i]; }
                             for (int i = 0; repTime[i] != '\0'; i++) { fullInf[i+60] = repTime[i]; }
-                            fakeDir2 << fullInf << '\n';
+                            copyPaste2.paste << fullInf << '\n';
                         }
                     }
                 }
                 else {
-                    fakeDir2 << finderEditor << '\n';
+                    copyPaste2.paste << finderEditor << '\n';
                     finderEditor = "";
                 }
             }
-            fakeDir2.close();
-            toCopyDir2.close();
-            ofstream trueDir2("directories.txt");
-            ifstream toTrueDir2("directoriesTemp.txt");
-            while (getline(toTrueDir2, finderEditor)) {
-                trueDir2 << finderEditor << '\n';
-            }
-            cout << "Editing complete\n\n";
-            trueDir2.close();
-            toTrueDir2.close();
-            remove("directoriesTemp.txt");
+            copyPaste2.paste.close();
+            copyPaste2.copy.close();
+			returnToDefaultDir();
         }
 
         // 5. Вывод содержимого раздела
         if (commandUsr == "LISTDIR") {
             cout << "\nTo cancel, type EXIT" << '\n';
             cout << "Enter the name of the directory to list: \n";
-            cout << ">> ";
             getline(cin, commandUsr);
             cout << '\n';
             commandUsr = upperCaseWord(commandUsr);
-            if (commandUsr == "EXIT") { cout << '\n'; continue; }
-            cout << "========================================================\n\n";
+			if (isExist(commandUsr) == false) { cout << "Nothing to list!\n\n"; continue; }
+			if (commandUsr == "EXIT") { cout << '\n'; continue; }
+
+			cout << "========================================================\n\n";
             bool flagToFind3 = false;
             string finderLister;
             ifstream listdir("directories.txt");
